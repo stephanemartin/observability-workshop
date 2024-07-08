@@ -87,3 +87,33 @@ otelcol.exporter.otlp "tempo" {
 	}
 }
 
+// TAIL SAMPLING (2)
+otelcol.processor.tail_sampling "actuator" {
+  // Filter on http.url attribute (3)
+	policy {
+		name = "filter_http_url"
+		type = "string_attribute"
+		string_attribute {
+			key = "http.url"
+			values = ["/actuator/health", "/actuator/prometheus"]
+			enabled_regex_matching = true
+			invert_match = true
+		}
+	}
+
+  // Filter on url.path attribute (3)
+	policy {
+		name = "filter_url_path"
+		type = "string_attribute"
+		string_attribute {
+			key = "url.path"
+			values = ["/actuator/health", "/actuator/prometheus"]
+			enabled_regex_matching = true
+			invert_match = true
+		}
+	}
+
+	output {
+		traces = [otelcol.processor.batch.default.input] // (4)
+	}
+}
