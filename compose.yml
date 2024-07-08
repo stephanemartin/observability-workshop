@@ -105,7 +105,7 @@ services:
         GID: ${GID:-1000}
     environment:
       CONFIG_SERVER_URL: http://config-server:8888
-      SPRING_PROFILES_ACTIVE: default,docker
+      SPRING_PROFILES_ACTIVE: default,docker,mdc
       OTEL_SERVICE_NAME: easypay-service
       OTEL_EXPORTER_OTLP_ENDPOINT: http://collector:4317
       OTEL_EXPORTER_OTLP_PROTOCOL: grpc

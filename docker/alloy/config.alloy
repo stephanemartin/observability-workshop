@@ -2,3 +2,88 @@ logging {
 	level  = "info"
 	format = "logfmt"
 }
+////////////////////
+// LOGS
+////////////////////
+
+// JSON LOG FILES (1)
+local.file_match "jsonlogs" {
+	path_targets = [{"__path__" = "/logs/*.json", "exporter" = "JSONFILE"}]
+}
+// (2)
+loki.source.file "jsonlogfiles" {
+	targets    = local.file_match.jsonlogs.targets
+	forward_to = [loki.process.jsonlogs.receiver]
+}
+// (3)
+loki.process "jsonlogs" {
+	forward_to = [loki.write.endpoint.receiver]
+
+	stage.luhn {
+    	min_length  = 13
+    	replacement = "**MASKED**"
+  	}
+  // (4)
+	stage.json {
+		expressions = {
+			timestamp   = "timestamp",
+			application = "context.properties.applicationName",
+			instance    = "context.properties.instance",
+      level       = "level",
+		}
+	}
+
+  // (5)
+	stage.labels {
+		values = {
+			application = "application",
+			instance    = "instance",
+      level       = "level",
+		}
+	}
+
+  // (6)
+	stage.timestamp {
+		source = "timestamp"
+		format = "RFC3339"
+		fallback_formats = ["UnixMs",]
+	}
+}
+
+// (7)
+// EXPORTER (LOKI)
+loki.write "endpoint" {
+	endpoint {
+		url = "http://loki:3100/loki/api/v1/push"
+	}
+}
+
+// RECEIVER SETUP (OTLP GRPC) (1)
+otelcol.receiver.otlp "default" {
+	grpc {
+		endpoint = "0.0.0.0:4317"
+	}
+
+	output {
+		traces  = [otelcol.processor.batch.default.input]
+	}
+}
+
+// BATCH PROCESSING FOR OPTIMIZATION (2)
+otelcol.processor.batch "default" {
+	output {
+		traces  = [otelcol.exporter.otlp.tempo.input]
+	}
+}
+
+// TRACE EXPORTING TO TEMPO (OTLP) (3)
+otelcol.exporter.otlp "tempo" {
+	client {
+		endpoint = "tempo:4317"
+
+		tls {
+			insecure = true
+		}
+	}
+}
+

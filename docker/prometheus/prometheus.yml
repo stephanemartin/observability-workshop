@@ -29,6 +29,14 @@ scrape_configs:
       - targets:
           - discovery-server:8761
 
+  - job_name: prometheus-easypay-service
+    scrape_interval: 5s
+    scrape_timeout: 5s
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets:
+          - easypay-service:8080
+
   # Discover targets from Eureka and scrape metrics from them (Whitebox monitoring)
   - job_name: eureka-discovery
     scrape_interval: 5s
@@ -42,3 +50,4 @@ scrape_configs:
       - source_labels: [__meta_eureka_app_name] # Ignore easypay-service, for workshop purpose
         regex: EASYPAY-SERVICE
         action: drop
+

@@ -33,5 +33,7 @@ RUN chown -R javauser:javauser /app
 RUN apk add --no-cache curl
 
 USER javauser
+COPY instrumentation/grafana-opentelemetry-java.jar /app/grafana-opentelemetry-java.jar
 
-ENTRYPOINT ["java", "-cp","app:app/lib/*","com.worldline.easypay.EasypayServiceApplication"]
+
+ENTRYPOINT ["java", "-javaagent:/app/grafana-opentelemetry-java.jar", "-cp","app:app/lib/*","com.worldline.easypay.EasypayServiceApplication"]

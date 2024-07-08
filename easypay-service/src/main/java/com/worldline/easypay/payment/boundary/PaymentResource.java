@@ -75,9 +75,9 @@ public class PaymentResource {
     @ApiResponse(responseCode = "201", description = "Payment processed", content = @Content(mediaType = "application/json"))
     public ResponseEntity<PaymentResponse> processPayment(
             @Parameter(description = "The payment to be processed", required = true) @Valid @NotNull @RequestBody PaymentRequest paymentRequest) {
-//        MDC.put("CardNumber",paymentRequest.cardNumber());
-//        MDC.put("POS",paymentRequest.posId());
-        // LOG.info("Processing new payment: {}", paymentRequest);
+        MDC.put("CardNumber",paymentRequest.cardNumber());
+        MDC.put("POS",paymentRequest.posId());
+        LOG.info("Processing new payment: {}", paymentRequest);
         PaymentProcessingContext paymentContext = new PaymentProcessingContext(paymentRequest);
 
         paymentService.accept(paymentContext);
@@ -87,7 +87,7 @@ public class PaymentResource {
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
                 .buildAndExpand(response.paymentId()).toUri();
         var httpResponse = ResponseEntity.created(location).body(response);
-        // MDC.clear();
+        MDC.clear();
         return httpResponse;
     }
 }

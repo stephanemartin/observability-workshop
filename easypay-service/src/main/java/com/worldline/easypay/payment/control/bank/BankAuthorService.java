@@ -45,6 +45,7 @@ public class BankAuthorService {
             context.bankCalled = true;
             context.authorId = Optional.of(response.authorId());
             context.authorized = response.authorized();
+            LOG.info("Bank answered payment authorization with authorId={}, authorized={}", response.authorId(), response.authorized());
             return context.authorized;
         } catch (Exception e) {
             LOG.warn("Exception while requesting bank, operation will be retried or fallback: {}", e.getMessage());
